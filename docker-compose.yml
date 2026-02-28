@@ -1,0 +1,18 @@
+services:
+  sp-api:
+    build: .
+    container_name: sp-api-cli
+    env_file: .env
+    volumes:
+      - ./output:/app/output
+    entrypoint: ["sp-api"]
+    command: ["info"]
+
+  # Example: search catalog
+  # docker compose run sp-api catalog search "wireless earbuds"
+  
+  # Example: list orders
+  # docker compose run sp-api orders list
+  
+  # Example: check pricing
+  # docker compose run sp-api pricing competitive B09XYZ1234

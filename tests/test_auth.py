@@ -47,7 +47,8 @@ class TestAuthManager:
 
     def test_auth_error_on_http_failure(self):
         with patch("sp_api.auth.requests.post") as mock_post:
-            mock_post.side_effect = Exception("Connection refused")
+            from requests.exceptions import ConnectionError
+            mock_post.side_effect = ConnectionError("Connection refused")
             mgr = AuthManager("tok", "cid", "sec")
             with pytest.raises(SPAPIAuthError):
                 _ = mgr.access_token

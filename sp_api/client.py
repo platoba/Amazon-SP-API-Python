@@ -22,13 +22,40 @@ from sp_api.inventory import InventoryAPI
 from sp_api.reports import ReportsAPI
 from sp_api.finances import FinancesAPI
 from sp_api.listings import ListingsAPI
+from sp_api.pricing import PricingAPI
+from sp_api.feeds import FeedsAPI
+from sp_api.fulfillment import FulfillmentAPI
+from sp_api.notifications import NotificationsAPI
 
 logger = logging.getLogger(__name__)
 
 
-class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, ListingsAPI):
+class SPAPIClient(
+    OrdersAPI,
+    CatalogAPI,
+    InventoryAPI,
+    ReportsAPI,
+    FinancesAPI,
+    ListingsAPI,
+    PricingAPI,
+    FeedsAPI,
+    FulfillmentAPI,
+    NotificationsAPI,
+):
     """
     Amazon Selling Partner API client.
+
+    Unified access to all SP-API endpoints:
+        - Catalog Items (search, details)
+        - Orders (list, get, items, address, buyer info)
+        - Product Pricing (competitive pricing, offers, batch)
+        - Reports (create, poll, download)
+        - Feeds (submit, upload, poll)
+        - FBA Inventory (summaries, by-SKU)
+        - Finances (events, groups, by-order)
+        - Listings Items (CRUD)
+        - Fulfillment Outbound / MCF (preview, create, track, returns)
+        - Notifications (subscriptions, destinations)
 
     Usage:
         client = SPAPIClient(
@@ -40,6 +67,8 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
         orders = client.get_orders()
     """
 
+    VERSION = "3.0.0"
+
     def __init__(
         self,
         refresh_token,
@@ -49,6 +78,7 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
         max_retries=3,
         timeout=30,
         rate_limiter=None,
+        user_agent=None,
     ):
         if marketplace not in MARKETPLACES:
             raise ValueError(
@@ -72,15 +102,20 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
         # HTTP session
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "Amazon-SP-API-Python/2.0",
+            "User-Agent": user_agent or f"Amazon-SP-API-Python/{self.VERSION}",
             "Content-Type": "application/json",
         })
+
+        # Request stats
+        self._request_count = 0
+        self._error_count = 0
 
     # ── Core HTTP ─────────────────────────────────────────
 
     def _request(self, method, path, params=None, body=None, **kwargs):
         url = self.endpoint + path
         self.rate_limiter.acquire(path)
+        self._request_count += 1
 
         headers = {"x-amz-access-token": self.auth.access_token}
 
@@ -96,6 +131,7 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
                     **kwargs,
                 )
             except requests.RequestException as e:
+                self._error_count += 1
                 if attempt == self.max_retries:
                     raise SPAPIError(f"Request failed after {self.max_retries} retries: {e}") from e
                 wait = 2 ** attempt
@@ -107,6 +143,7 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
             if resp.status_code == 429:
                 retry_after = float(resp.headers.get("Retry-After", 2 ** attempt))
                 if attempt == self.max_retries:
+                    self._error_count += 1
                     raise SPAPIThrottleError(
                         f"Rate limited after {self.max_retries} retries",
                         retry_after=retry_after,
@@ -127,6 +164,7 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
                     continue
 
             if resp.status_code == 404:
+                self._error_count += 1
                 raise SPAPINotFoundError(
                     f"Not found: {path}",
                     status_code=404,
@@ -134,6 +172,7 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
                 )
 
             if resp.status_code == 400:
+                self._error_count += 1
                 raise SPAPIValidationError(
                     f"Validation error: {resp.text[:500]}",
                     status_code=400,
@@ -141,6 +180,7 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
                 )
 
             if resp.status_code >= 400:
+                self._error_count += 1
                 raise SPAPIError(
                     f"SP-API {resp.status_code}: {resp.text[:500]}",
                     status_code=resp.status_code,
@@ -162,3 +202,22 @@ class SPAPIClient(OrdersAPI, CatalogAPI, InventoryAPI, ReportsAPI, FinancesAPI, 
 
     def delete(self, path, params=None):
         return self._request("DELETE", path, params=params)
+
+    # ── Stats / Info ──────────────────────────────────────
+
+    @property
+    def stats(self):
+        """Return request statistics."""
+        return {
+            "total_requests": self._request_count,
+            "total_errors": self._error_count,
+            "marketplace": self.marketplace,
+            "endpoint": self.endpoint,
+        }
+
+    def __repr__(self):
+        return (
+            f"SPAPIClient(marketplace={self.marketplace!r}, "
+            f"endpoint={self.endpoint!r}, "
+            f"requests={self._request_count})"
+        )

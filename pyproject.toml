@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amazon-sp-api-lite"
+version = "3.0.0"
+description = "Lightweight Amazon Selling Partner API Python SDK — 10 API modules, CLI, zero bloat"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "platoba"}]
+keywords = ["amazon", "sp-api", "selling-partner", "ecommerce", "fba", "mws"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Office/Business",
+]
+dependencies = [
+    "requests>=2.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+sp-api = "sp_api.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/platoba/Amazon-SP-API-Python"
+Repository = "https://github.com/platoba/Amazon-SP-API-Python"
+Issues = "https://github.com/platoba/Amazon-SP-API-Python/issues"
+
+[tool.setuptools.packages.find]
+include = ["sp_api*"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"

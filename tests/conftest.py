@@ -41,15 +41,25 @@ def rate_limiter():
     return RateLimiter(default_rate=1000.0, burst=100)
 
 
+class MockSession:
+    """Enhanced mock session with set_response helper."""
+
+    def __init__(self, session_mock):
+        self._mock = session_mock
+
+    def set_response(self, status_code, json_data=None, text=None, headers=None):
+        resp = make_response(json_data, status_code, text, headers)
+        self._mock.request.return_value = resp
+
+
 @pytest.fixture
 def mock_session():
-    """Mock requests.Session for SPAPIClient."""
+    """Mock requests.Session for SPAPIClient with set_response helper."""
     with patch("sp_api.client.requests.Session") as mock_cls:
         session = MagicMock()
-        session.headers = {}
-        session.headers.update = MagicMock()
+        session.headers = MagicMock()
         mock_cls.return_value = session
-        yield session
+        yield MockSession(session)
 
 
 @pytest.fixture

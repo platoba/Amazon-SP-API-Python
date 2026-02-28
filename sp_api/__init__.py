@@ -1,29 +1,31 @@
 """
-Amazon SP-API Python SDK v2.0
-Modular, production-ready Amazon Selling Partner API client.
+Amazon SP-API Python SDK — Lightweight & Complete.
 """
 
+from sp_api.client import SPAPIClient as SPAPI
 from sp_api.client import SPAPIClient
-from sp_api.auth import AuthManager
-from sp_api.exceptions import SPAPIError, SPAPIAuthError, SPAPIThrottleError
-from sp_api.orders import OrdersAPI
-from sp_api.catalog import CatalogAPI
-from sp_api.inventory import InventoryAPI
-from sp_api.reports import ReportsAPI
-from sp_api.finances import FinancesAPI
-from sp_api.listings import ListingsAPI
+from sp_api.exceptions import (
+    SPAPIError,
+    SPAPIAuthError,
+    SPAPIThrottleError,
+    SPAPINotFoundError,
+    SPAPIValidationError,
+)
+from sp_api.marketplaces import MARKETPLACES, ENDPOINTS, REGION_MAP
+from sp_api.rate_limiter import RateLimiter
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
+
 __all__ = [
+    "SPAPI",
     "SPAPIClient",
-    "AuthManager",
     "SPAPIError",
     "SPAPIAuthError",
     "SPAPIThrottleError",
-    "OrdersAPI",
-    "CatalogAPI",
-    "InventoryAPI",
-    "ReportsAPI",
-    "FinancesAPI",
-    "ListingsAPI",
+    "SPAPINotFoundError",
+    "SPAPIValidationError",
+    "MARKETPLACES",
+    "ENDPOINTS",
+    "REGION_MAP",
+    "RateLimiter",
 ]

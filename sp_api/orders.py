@@ -22,7 +22,7 @@ class OrdersAPI(BaseAPI):
         """
         if not created_after:
             created_after = (
-                datetime.datetime.utcnow() - datetime.timedelta(days=7)
+                datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)
             ).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         params = {
