@@ -55,4 +55,4 @@ class TestSPAPIClient:
         assert "US" in r
 
     def test_version(self, client):
-        assert client.VERSION == "3.0.0"
+        assert client.VERSION == "4.0.0"

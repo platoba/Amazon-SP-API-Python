@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "amazon-sp-api-lite"
-version = "3.0.0"
-description = "Lightweight Amazon Selling Partner API Python SDK — 10 API modules, CLI, zero bloat"
+version = "5.1.0"
+description = "Lightweight Amazon SP-API Python SDK — async client, 13 API modules, pagination, middleware, retry engine, validators, metrics, data models, webhooks, sandbox, batch ops, caching, CLI"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [{name = "platoba"}]
-keywords = ["amazon", "sp-api", "selling-partner", "ecommerce", "fba", "mws"]
+keywords = ["amazon", "sp-api", "selling-partner", "ecommerce", "fba", "mws", "async", "sdk"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -23,16 +23,29 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
     "Topic :: Office/Business",
+    "Framework :: AsyncIO",
 ]
 dependencies = [
     "requests>=2.28.0",
 ]
 
 [project.optional-dependencies]
+async = [
+    "aiohttp>=3.8.0",
+]
+aws = [
+    "boto3>=1.26.0",
+]
+all = [
+    "aiohttp>=3.8.0",
+    "boto3>=1.26.0",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21.0",
     "ruff>=0.1.0",
+    "aiohttp>=3.8.0",
 ]
 
 [project.scripts]
@@ -42,6 +55,7 @@ sp-api = "sp_api.cli:main"
 Homepage = "https://github.com/platoba/Amazon-SP-API-Python"
 Repository = "https://github.com/platoba/Amazon-SP-API-Python"
 Issues = "https://github.com/platoba/Amazon-SP-API-Python/issues"
+Changelog = "https://github.com/platoba/Amazon-SP-API-Python/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 include = ["sp_api*"]
@@ -54,3 +68,4 @@ select = ["E", "F", "I", "W"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+asyncio_mode = "auto"

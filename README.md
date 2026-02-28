@@ -1,10 +1,20 @@
 # Amazon SP-API Python SDK
 
-🛒 Lightweight Amazon Selling Partner API client for Python. 10 API modules, CLI tool, zero bloat.
+🛒 Lightweight Amazon Selling Partner API client for Python. 13 API modules, batch operations, response caching, CSV/JSON export, CLI tool — zero bloat.
 
 [![CI](https://github.com/platoba/Amazon-SP-API-Python/actions/workflows/ci.yml/badge.svg)](https://github.com/platoba/Amazon-SP-API-Python/actions)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+## Features
+
+- **13 API modules**: Orders, Catalog, Pricing, Inventory, Reports, Feeds, Listings, Finances, Fulfillment/MCF, Notifications, Sellers, Product Fees, Shipping v2
+- **Batch operations**: Concurrent bulk lookups for ASINs, pricing, fees, inventory
+- **Response caching**: TTL-based cache with configurable per-endpoint expiry
+- **Export utilities**: CSV, JSON, JSONL export with auto-flattening
+- **20 marketplaces**: US, UK, DE, JP, AU + 15 more
+- **Rate limiting**: Automatic rate limit handling with exponential backoff
+- **CLI tool**: Full-featured command-line interface
 
 ## Install
 
@@ -28,7 +38,7 @@ api = SPAPI(
     refresh_token="your_refresh_token",
     client_id="your_client_id",
     client_secret="your_client_secret",
-    marketplace="US"  # US/UK/DE/JP/AU + 16 more
+    marketplace="US"  # US/UK/DE/JP/AU + 15 more
 )
 
 # Search products
@@ -40,24 +50,106 @@ orders = api.get_orders()
 # Get competitive pricing
 pricing = api.get_competitive_pricing(asins=["B09XYZ1234"])
 
-# Submit a feed
-api.submit_feed("pricing", "<xml>...</xml>")
+# Estimate fees
+fees = api.get_my_fees_estimate_for_asin("B09XYZ1234", price=29.99)
 
-# Create MCF fulfillment order
-api.create_fulfillment_order(
-    seller_fulfillment_order_id="FO-001",
-    displayable_order_id="ORD-001",
-    displayable_order_date="2026-02-28T00:00:00Z",
-    displayable_order_comment="Thank you!",
-    shipping_speed_category="Standard",
-    destination_address={...},
-    items=[{"sellerSku": "SKU-001", "quantity": 1, ...}],
+# Get seller marketplace participations
+marketplaces = api.get_active_marketplaces()
+
+# Get shipping rates
+rates = api.get_rates(
+    ship_from={"addressLine1": "123 Main St", "city": "Seattle", ...},
+    ship_to={"addressLine1": "456 Oak Ave", "city": "Portland", ...},
+    packages=[{"dimensions": {...}, "weight": {...}}],
 )
-
-# Request stats
-print(api.stats)
-# → {'total_requests': 4, 'total_errors': 0, 'marketplace': 'US', ...}
 ```
+
+## Batch Operations
+
+```python
+from sp_api import SPAPI, BatchOperations
+
+api = SPAPI(...)
+batch = BatchOperations(api, max_workers=5)
+
+# Bulk catalog lookup (concurrent)
+results = batch.bulk_catalog_lookup(["B09XYZ1234", "B08ABC5678", ...])
+
+# Bulk pricing
+pricing = batch.bulk_pricing(["B09XYZ1234", "B08ABC5678"])
+
+# Bulk fee estimates
+fees = batch.bulk_fee_estimates([
+    {"asin": "B09XYZ1234", "price": 29.99},
+    {"asin": "B08ABC5678", "price": 49.99},
+])
+
+# Summary
+print(BatchOperations.summarize(results))
+# → {'total': 2, 'success': 2, 'failed': 0, 'success_rate': '100.0%'}
+```
+
+## Response Caching
+
+```python
+from sp_api import ResponseCache
+
+cache = ResponseCache(default_ttl=300)  # 5 min default
+
+@cache.cached(ttl=3600, key_prefix="catalog_")
+def get_product(asin):
+    return api.get_catalog_item(asin)
+
+# First call → API request
+product = get_product("B09XYZ1234")
+
+# Second call → cache hit (no API call)
+product = get_product("B09XYZ1234")
+
+# Stats
+print(cache.stats)
+# → {'total_entries': 1, 'total_hits': 1, 'hit_rate': '50.0%', ...}
+```
+
+## Export Data
+
+```python
+from sp_api import Exporter
+
+exporter = Exporter(output_dir="./exports")
+
+# Export orders to CSV (auto-flattens nested dicts)
+orders = api.get_orders()
+exporter.to_csv(orders, "orders.csv")
+
+# Export to JSON
+exporter.to_json(orders, "orders.json")
+
+# Export to JSONL (streaming-friendly)
+exporter.to_jsonl(orders, "orders.jsonl")
+
+# Auto-timestamped export
+exporter.export(orders, prefix="orders", fmt="csv")
+# → exports/orders_20260228_120000.csv
+```
+
+## API Modules
+
+| Module | Endpoints | Description |
+|--------|-----------|-------------|
+| **Orders** | 6 | List, get, items, address, buyer info, regulated info |
+| **Catalog** | 3 | Search, get item, search by identifier |
+| **Pricing** | 4 | Competitive pricing, offers, batch pricing |
+| **Inventory** | 3 | FBA summaries, by-SKU, paginated iterator |
+| **Reports** | 4 | Create, poll, download, list |
+| **Feeds** | 4 | Submit, upload, poll, list |
+| **Listings** | 3 | Create, update, delete listings |
+| **Finances** | 3 | Events, groups, by-order |
+| **Fulfillment** | 6 | MCF preview, create, track, cancel, returns |
+| **Notifications** | 4 | Subscribe, create destination, list, delete |
+| **Sellers** | 3 | Marketplace participations, account info, active marketplaces |
+| **Product Fees** | 4 | Fee estimate by ASIN/SKU, batch estimates, fee extraction |
+| **Shipping** | 6 | Rates, purchase, track, cancel, access points |
 
 ## CLI
 
@@ -79,28 +171,11 @@ sp-api pricing competitive B09XYZ1234,B08ABC5678
 # List reports
 sp-api reports list --limit 5
 
-# Show supported APIs & marketplaces
+# SDK info
 sp-api info
 ```
 
-## Supported APIs
-
-| API | Module | Key Methods |
-|-----|--------|-------------|
-| **Catalog Items** | `CatalogAPI` | `search_catalog`, `get_catalog_item`, `search_catalog_by_identifier` |
-| **Orders** | `OrdersAPI` | `get_orders`, `get_order`, `get_order_items`, `get_order_address` |
-| **Product Pricing** | `PricingAPI` | `get_competitive_pricing`, `get_item_offers`, `get_listing_offers`, `get_pricing` |
-| **Reports** | `ReportsAPI` | `create_report`, `get_report`, `create_and_wait`, `get_report_document` |
-| **Feeds** | `FeedsAPI` | `submit_feed`, `submit_json_feed`, `submit_and_wait`, `get_feed` |
-| **FBA Inventory** | `InventoryAPI` | `get_inventory_summaries`, `get_all_inventory` |
-| **Finances** | `FinancesAPI` | `list_financial_events`, `list_financial_event_groups` |
-| **Listings Items** | `ListingsAPI` | `get_listings_item`, `put_listings_item`, `patch_listings_item` |
-| **Fulfillment (MCF)** | `FulfillmentAPI` | `get_fulfillment_preview`, `create_fulfillment_order`, `get_package_tracking_details` |
-| **Notifications** | `NotificationsAPI` | `create_subscription`, `get_destinations`, `create_destination` |
-
-## Marketplaces
-
-20 supported marketplaces across 3 regions:
+## Supported Marketplaces
 
 | Region | Marketplaces |
 |--------|-------------|
@@ -108,34 +183,10 @@ sp-api info
 | **Europe** | UK, DE, FR, IT, ES, NL, SE, PL, TR, AE, SA, IN, EG |
 | **Far East** | JP, AU, SG |
 
-## Features
-
-- 🔐 **OAuth2 auto-refresh** — Thread-safe token management with configurable buffer
-- ⚡ **Rate limiting** — Token-bucket algorithm with per-endpoint SP-API limits
-- 🔄 **Auto-retry** — Exponential backoff for transient errors and 429s
-- 📊 **Request stats** — Built-in request/error counting
-- 🛠️ **CLI tool** — Command-line access to all API modules
-- 📦 **Report shortcuts** — Use `"inventory"` instead of `"GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"`
-- 📤 **Feed helpers** — `submit_feed()` handles document creation + upload + submission
-- 🐳 **Docker ready** — Dockerfile + docker-compose included
-
-## Docker
-
-```bash
-# Build
-docker build -t sp-api .
-
-# Run
-docker run --env-file .env sp-api catalog search "wireless earbuds"
-
-# Via compose
-docker compose run sp-api orders list
-```
-
 ## Development
 
 ```bash
-# Install dev dependencies
+# Setup
 make dev
 
 # Run tests
@@ -151,39 +202,19 @@ make lint
 make fmt
 ```
 
-## Project Structure
+## Docker
 
-```
-Amazon-SP-API-Python/
-├── sp_api/
-│   ├── __init__.py        # Package exports
-│   ├── client.py          # SPAPIClient (main entry)
-│   ├── auth.py            # OAuth2 token manager
-│   ├── rate_limiter.py    # Token-bucket rate limiter
-│   ├── marketplaces.py    # Marketplace constants
-│   ├── exceptions.py      # Error classes
-│   ├── base.py            # BaseAPI mixin
-│   ├── cli.py             # CLI tool
-│   ├── orders.py          # Orders API
-│   ├── catalog.py         # Catalog Items API
-│   ├── pricing.py         # Product Pricing API
-│   ├── reports.py         # Reports API
-│   ├── feeds.py           # Feeds API
-│   ├── inventory.py       # FBA Inventory API
-│   ├── finances.py        # Finances API
-│   ├── listings.py        # Listings Items API
-│   ├── fulfillment.py     # Fulfillment Outbound (MCF)
-│   └── notifications.py   # Notifications API
-├── tests/                 # 80+ test cases
-├── pyproject.toml
-├── setup.py
-├── Dockerfile
-├── docker-compose.yml
-├── Makefile
-├── CHANGELOG.md
-└── LICENSE
+```bash
+# Build
+docker build -t sp-api-python .
+
+# Run CLI
+docker run --env-file .env sp-api-python catalog search "wireless earbuds"
+
+# Docker Compose
+docker compose run sp-api catalog search "wireless earbuds"
 ```
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT

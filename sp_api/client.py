@@ -26,6 +26,9 @@ from sp_api.pricing import PricingAPI
 from sp_api.feeds import FeedsAPI
 from sp_api.fulfillment import FulfillmentAPI
 from sp_api.notifications import NotificationsAPI
+from sp_api.sellers import SellersAPI
+from sp_api.product_fees import ProductFeesAPI
+from sp_api.shipping import ShippingAPI
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +44,9 @@ class SPAPIClient(
     FeedsAPI,
     FulfillmentAPI,
     NotificationsAPI,
+    SellersAPI,
+    ProductFeesAPI,
+    ShippingAPI,
 ):
     """
     Amazon Selling Partner API client.
@@ -57,6 +63,10 @@ class SPAPIClient(
         - Fulfillment Outbound / MCF (preview, create, track, returns)
         - Notifications (subscriptions, destinations)
 
+        - Sellers (marketplace participations)
+        - Product Fees (referral/FBA fee estimates)
+        - Shipping v2 (rates, labels, tracking)
+
     Usage:
         client = SPAPIClient(
             refresh_token="...",
@@ -67,7 +77,7 @@ class SPAPIClient(
         orders = client.get_orders()
     """
 
-    VERSION = "3.0.0"
+    VERSION = "4.0.0"
 
     def __init__(
         self,
