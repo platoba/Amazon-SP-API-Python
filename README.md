@@ -218,3 +218,49 @@ docker compose run sp-api catalog search "wireless earbuds"
 ## License
 
 MIT
+
+## ASIN Monitoring
+
+Track price, inventory, rating, and buybox changes for multiple ASINs:
+
+```python
+from sp_api import SPAPI
+from sp_api.asin_monitor import ASINMonitor
+
+api = SPAPI(...)
+monitor = ASINMonitor(api, storage_path="./monitor_data")
+
+# Capture current snapshot
+asins = ["B08N5WRWNW", "B07XJ8C8F5"]
+snapshots = monitor.capture_snapshot(asins)
+monitor.save_snapshots(snapshots)
+
+# Detect changes (last 24h)
+changes = monitor.detect_changes("B08N5WRWNW", threshold_pct=5.0)
+if changes["changes"]:
+    for change in changes["changes"]:
+        print(f"{change['type']}: {change}")
+
+# Continuous monitoring
+monitor.monitor_loop(asins, interval_minutes=60, duration_hours=24)
+```
+
+### CLI
+
+```bash
+# Start monitoring (60min interval)
+sp-api monitor start B08N5WRWNW B07XJ8C8F5 --interval 60
+
+# View history
+sp-api monitor history B08N5WRWNW --days 7
+
+# Detect changes
+sp-api monitor changes B08N5WRWNW --threshold 5.0
+```
+
+**Use cases:**
+- Competitor price tracking
+- Inventory availability alerts
+- Rating/review monitoring
+- Buybox winner tracking
+- Repricing automation triggers

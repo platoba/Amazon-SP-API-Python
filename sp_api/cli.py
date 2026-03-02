@@ -278,3 +278,86 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+@cli.group()
+def monitor():
+    """ASIN monitoring commands"""
+    pass
+
+
+@monitor.command()
+@click.argument("asins", nargs=-1, required=True)
+@click.option("--interval", default=60, help="Monitoring interval in minutes")
+@click.option("--duration", default=None, type=int, help="Duration in hours (None = infinite)")
+@click.option("--storage", default="./asin_monitor_data", help="Storage directory")
+@pass_client
+def start(client, asins, interval, duration, storage):
+    """Start monitoring ASINs for price/inventory/rating changes"""
+    from sp_api.asin_monitor import ASINMonitor
+    
+    monitor = ASINMonitor(client, storage_path=storage)
+    click.echo(f"🔍 Monitoring {len(asins)} ASINs (interval: {interval}m)")
+    
+    try:
+        monitor.monitor_loop(list(asins), interval_minutes=interval, duration_hours=duration)
+    except KeyboardInterrupt:
+        click.echo("\n⏹️  Monitoring stopped")
+
+
+@monitor.command()
+@click.argument("asin")
+@click.option("--days", default=7, help="Days of history to show")
+@click.option("--storage", default="./asin_monitor_data", help="Storage directory")
+@pass_client
+def history(client, asin, days, storage):
+    """Show historical snapshots for an ASIN"""
+    from sp_api.asin_monitor import ASINMonitor
+    
+    monitor = ASINMonitor(client, storage_path=storage)
+    snapshots = monitor.load_snapshots(asin, days=days)
+    
+    if not snapshots:
+        click.echo(f"No snapshots found for {asin}")
+        return
+    
+    click.echo(f"📊 {len(snapshots)} snapshots for {asin} (last {days} days)\n")
+    
+    for snapshot in snapshots:
+        click.echo(f"{snapshot.timestamp[:19]}")
+        click.echo(f"  Price: {snapshot.price} {snapshot.currency}")
+        click.echo(f"  Availability: {snapshot.availability}")
+        click.echo(f"  Rating: {snapshot.rating} ({snapshot.review_count} reviews)")
+        click.echo(f"  Buybox: {snapshot.buybox_winner}")
+        click.echo()
+
+
+@monitor.command()
+@click.argument("asin")
+@click.option("--threshold", default=5.0, help="Price change threshold (%)")
+@click.option("--storage", default="./asin_monitor_data", help="Storage directory")
+@pass_client
+def changes(client, asin, threshold, storage):
+    """Detect recent changes for an ASIN"""
+    from sp_api.asin_monitor import ASINMonitor
+    
+    monitor = ASINMonitor(client, storage_path=storage)
+    result = monitor.detect_changes(asin, threshold_pct=threshold)
+    
+    if not result["changes"]:
+        click.echo(f"✅ No significant changes detected for {asin}")
+        return
+    
+    click.echo(f"⚠️  {len(result['changes'])} changes detected for {asin}:\n")
+    
+    for change in result["changes"]:
+        if change["type"] == "price":
+            emoji = "📉" if change["change_pct"] < 0 else "📈"
+            click.echo(f"{emoji} Price: {change['from']} → {change['to']} ({change['change_pct']:+.1f}%)")
+        elif change["type"] == "availability":
+            click.echo(f"📦 Availability: {change['from']} → {change['to']}")
+        elif change["type"] == "rating":
+            emoji = "⭐" if change["change"] > 0 else "⬇️"
+            click.echo(f"{emoji} Rating: {change['from']} → {change['to']} ({change['change']:+.1f})")
+        elif change["type"] == "buybox":
+            click.echo(f"🏆 Buybox: {change['from']} → {change['to']}")
