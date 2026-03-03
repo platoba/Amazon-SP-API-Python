@@ -1,7 +1,6 @@
 """Tests for sp_api.rate_limiter — RateLimiter."""
 
 import time
-import pytest
 from sp_api.rate_limiter import RateLimiter
 
 

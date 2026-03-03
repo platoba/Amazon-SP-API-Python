@@ -7,14 +7,12 @@ transforming it, and loading into various destinations
 """
 
 import csv
-import io
 import json
 import logging
 import sqlite3
-import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import List
 
 logger = logging.getLogger(__name__)
 

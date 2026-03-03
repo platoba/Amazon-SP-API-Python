@@ -1,6 +1,5 @@
 """Tests for Notifications API module."""
 
-import pytest
 
 
 class TestNotificationsAPI:

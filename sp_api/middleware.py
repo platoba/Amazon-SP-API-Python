@@ -27,7 +27,7 @@ import time
 import logging
 import threading
 from collections import deque
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 

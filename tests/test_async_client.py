@@ -1,8 +1,7 @@
 """Tests for async client module."""
 
-import asyncio
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 # Test without aiohttp dependency
 from sp_api.async_client import AsyncAuthManager, AsyncSPAPI

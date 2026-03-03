@@ -1,6 +1,5 @@
 """Tests for sp_api.catalog — CatalogAPI."""
 
-import pytest
 
 
 class TestCatalogAPI:

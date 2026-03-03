@@ -1,7 +1,7 @@
 """Tests for Batch Operations module."""
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from sp_api.batch import BatchOperations
 
 

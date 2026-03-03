@@ -2,7 +2,6 @@
 
 import time
 import pytest
-from unittest.mock import MagicMock, patch
 
 from sp_api.retry import (
     BackoffStrategy,

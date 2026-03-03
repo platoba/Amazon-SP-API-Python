@@ -24,7 +24,7 @@ import time
 import threading
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type
+from typing import Any, Callable, Dict, List, Optional, Set, Type
 
 from sp_api.exceptions import SPAPIError, SPAPIThrottleError
 

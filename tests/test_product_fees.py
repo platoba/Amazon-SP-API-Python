@@ -1,7 +1,6 @@
 """Tests for Product Fees API module."""
 
 import pytest
-from tests.conftest import make_response
 from sp_api.product_fees import ProductFeesAPI
 
 

@@ -362,7 +362,7 @@ class AdvertisingAPI(BaseAPI):
         """Get keyword suggestions for a specific ASIN."""
         params = {"maxNumSuggestions": min(max_suggestions, 1000)}
         return self.get(
-            f"/v2/sp/targets/keywords/recommendations",
+            "/v2/sp/targets/keywords/recommendations",
             {"asins": [asin], **params},
         )
 

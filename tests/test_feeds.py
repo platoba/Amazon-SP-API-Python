@@ -1,8 +1,5 @@
 """Tests for Feeds API module."""
 
-import pytest
-from unittest.mock import patch, MagicMock
-from sp_api.exceptions import SPAPIError
 
 
 class TestFeedsAPI:

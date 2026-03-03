@@ -13,7 +13,6 @@ Usage:
 
 import datetime
 import uuid
-from typing import Any, Dict, List, Optional
 
 
 def _make_order_id():

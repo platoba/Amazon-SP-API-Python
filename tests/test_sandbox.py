@@ -1,6 +1,5 @@
 """Tests for sandbox module."""
 
-import pytest
 from sp_api.sandbox import SandboxSPAPI
 
 

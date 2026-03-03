@@ -1,7 +1,6 @@
 """Tests for Advertising API module."""
 
 import pytest
-from unittest.mock import MagicMock, patch
 from sp_api.advertising import (
     AdvertisingAPI, ADS_ENDPOINTS, CAMPAIGN_TYPES,
     TARGETING_TYPES, BID_STRATEGIES, MATCH_TYPES,

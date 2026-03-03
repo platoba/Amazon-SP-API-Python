@@ -3,8 +3,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from sp_api.client import SPAPIClient
-from sp_api.exceptions import SPAPIError, SPAPIThrottleError, SPAPINotFoundError, SPAPIValidationError
-from tests.conftest import make_response
 
 
 class TestSPAPIClient:

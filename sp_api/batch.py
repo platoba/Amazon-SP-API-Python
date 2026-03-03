@@ -6,7 +6,7 @@ Efficient bulk lookups and operations across multiple ASINs/SKUs.
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any, Optional, Callable
+from typing import List, Dict, Any, Callable
 
 logger = logging.getLogger(__name__)
 

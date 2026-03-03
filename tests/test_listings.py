@@ -1,6 +1,5 @@
 """Tests for sp_api.listings — ListingsAPI."""
 
-import pytest
 
 
 class TestListingsAPI:

@@ -1,7 +1,6 @@
 """Tests for webhooks module."""
 
 import json
-import pytest
 from sp_api.webhooks import (
     Notification,
     NotificationHandler,

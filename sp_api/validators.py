@@ -21,8 +21,8 @@ Usage:
 import re
 import functools
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 
 from sp_api.exceptions import SPAPIValidationError
 from sp_api.marketplaces import MARKETPLACES

@@ -1,6 +1,5 @@
 """Tests for sp_api.finances — FinancesAPI."""
 
-import pytest
 
 
 class TestFinancesAPI:

@@ -1,6 +1,5 @@
 """Tests for pagination module."""
 
-import pytest
 from sp_api.pagination import (
     Paginator,
     AsyncPaginator,

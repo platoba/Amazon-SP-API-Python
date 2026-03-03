@@ -1,6 +1,5 @@
 """Tests for Fulfillment Outbound (MCF) API module."""
 
-import pytest
 
 
 class TestFulfillmentAPI:

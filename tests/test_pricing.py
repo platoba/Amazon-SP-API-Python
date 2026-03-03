@@ -1,6 +1,5 @@
 """Tests for Product Pricing API module."""
 
-import pytest
 
 
 class TestPricingAPI:

@@ -2,7 +2,6 @@
 
 import time
 import pytest
-from unittest.mock import MagicMock
 
 from sp_api.middleware import (
     Middleware,

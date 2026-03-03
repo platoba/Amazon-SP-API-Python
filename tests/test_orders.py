@@ -1,7 +1,5 @@
 """Tests for sp_api.orders — OrdersAPI."""
 
-import pytest
-from tests.conftest import make_response
 
 
 class TestOrdersAPI:

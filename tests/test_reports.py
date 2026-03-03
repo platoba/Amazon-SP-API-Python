@@ -1,6 +1,5 @@
 """Tests for sp_api.reports — ReportsAPI."""
 
-import pytest
 
 
 class TestReportsAPI:

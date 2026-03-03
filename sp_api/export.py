@@ -5,7 +5,6 @@ Export utilities — CSV, JSON, and JSONL export for SP-API data.
 import csv
 import json
 import io
-import os
 import datetime
 import logging
 from pathlib import Path

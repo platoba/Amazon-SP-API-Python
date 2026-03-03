@@ -1,7 +1,6 @@
 """Tests for Response Cache module."""
 
 import time
-import pytest
 from sp_api.cache import ResponseCache, CacheEntry
 
 

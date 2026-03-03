@@ -1,7 +1,5 @@
 """Tests for Sellers API module."""
 
-import pytest
-from tests.conftest import make_response
 
 
 class TestSellersAPI:

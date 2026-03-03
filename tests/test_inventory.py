@@ -1,6 +1,5 @@
 """Tests for sp_api.inventory — InventoryAPI."""
 
-import pytest
 
 
 class TestInventoryAPI:
